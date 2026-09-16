@@ -28,9 +28,12 @@ export default function WishlistCard({
             onError={() => setImageError(true)}
           />
         ) : (
-          <span className="text-xs text-zinc-400 dark:text-zinc-600">
-            No image
-          </span>
+          // eslint-disable-next-line @next/next/no-img-element -- simple static asset, not worth next/image config
+          <img
+            src="/placeholder.svg"
+            alt=""
+            className="h-full w-full object-cover"
+          />
         )}
       </div>
 
