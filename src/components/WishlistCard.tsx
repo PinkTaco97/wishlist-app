@@ -24,6 +24,8 @@ export default function WishlistCard({
           <img
             src={item.image_url}
             alt=""
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
             onError={() => setImageError(true)}
           />

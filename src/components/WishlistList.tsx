@@ -1,10 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { WishlistItem } from "@/lib/items";
 import EditItemForm from "@/components/EditItemForm";
 import WishlistCard from "@/components/WishlistCard";
+
+const PAGE_SIZE = 12;
 
 type SortOption =
   | "newest"
@@ -65,8 +67,37 @@ export default function WishlistList({
   const router = useRouter();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [sort, setSort] = useState<SortOption>("newest");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const sortedItems = useMemo(() => sortItems(items, sort), [items, sort]);
+  const visibleItems = sortedItems.slice(0, visibleCount);
+  const hasMore = visibleCount < sortedItems.length;
+
+  // Re-collapse to the first page whenever the sort changes, adjusted during
+  // render (per React's guidance) rather than in an effect.
+  const [prevSort, setPrevSort] = useState(sort);
+  if (sort !== prevSort) {
+    setPrevSort(sort);
+    setVisibleCount(PAGE_SIZE);
+  }
+
+  useEffect(() => {
+    if (!hasMore) return;
+    const node = sentinelRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((count) => Math.min(count + PAGE_SIZE, sortedItems.length));
+        }
+      },
+      { rootMargin: "300px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, sortedItems.length]);
 
   async function handleDelete(id: number) {
     await fetch(`/api/items/${id}`, { method: "DELETE" });
@@ -102,7 +133,7 @@ export default function WishlistList({
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {sortedItems.map((item) =>
+        {visibleItems.map((item) =>
           editingId === item.id ? (
             <EditItemForm
               key={item.id}
@@ -124,6 +155,8 @@ export default function WishlistList({
           ),
         )}
       </div>
+
+      {hasMore && <div ref={sentinelRef} className="h-1" />}
     </div>
   );
 }
