@@ -11,14 +11,7 @@ export default function AuthControls({ authed }: { authed: boolean }) {
   }
 
   if (!authed) {
-    return (
-      <a
-        href="/login"
-        className="text-sm text-zinc-500 hover:underline dark:text-zinc-400"
-      >
-        Sign in
-      </a>
-    );
+    return null;
   }
 
   return (

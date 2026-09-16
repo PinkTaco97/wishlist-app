@@ -9,6 +9,13 @@ export type WishlistItem = {
   created_at: string;
 };
 
+function normalizeUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
 export function getAllItems(): WishlistItem[] {
   return db
     .prepare("SELECT * FROM items ORDER BY created_at DESC")
@@ -27,7 +34,7 @@ export function addItem(input: {
     )
     .run({
       title: input.title,
-      url: input.url ?? null,
+      url: normalizeUrl(input.url),
       notes: input.notes ?? null,
       price: input.price ?? null,
     });
@@ -51,7 +58,7 @@ export function updateItem(
   ).run({
     id,
     title: input.title,
-    url: input.url ?? null,
+    url: normalizeUrl(input.url),
     notes: input.notes ?? null,
     price: input.price ?? null,
   });
