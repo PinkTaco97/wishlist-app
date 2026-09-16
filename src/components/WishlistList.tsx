@@ -1,9 +1,59 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { WishlistItem } from "@/lib/items";
 import EditItemForm from "@/components/EditItemForm";
+import WishlistCard from "@/components/WishlistCard";
+
+type SortOption =
+  | "newest"
+  | "oldest"
+  | "price-desc"
+  | "price-asc"
+  | "title-asc"
+  | "title-desc";
+
+const SORT_LABELS: Record<SortOption, string> = {
+  newest: "Date added (newest first)",
+  oldest: "Date added (oldest first)",
+  "price-desc": "Price (high to low)",
+  "price-asc": "Price (low to high)",
+  "title-asc": "Title (A to Z)",
+  "title-desc": "Title (Z to A)",
+};
+
+function sortItems(items: WishlistItem[], sort: SortOption): WishlistItem[] {
+  const sorted = [...items];
+
+  switch (sort) {
+    case "oldest":
+      return sorted.sort((a, b) => a.created_at.localeCompare(b.created_at));
+    case "price-desc":
+      return sorted.sort((a, b) => {
+        if (a.price == null) return 1;
+        if (b.price == null) return -1;
+        return b.price - a.price;
+      });
+    case "price-asc":
+      return sorted.sort((a, b) => {
+        if (a.price == null) return 1;
+        if (b.price == null) return -1;
+        return a.price - b.price;
+      });
+    case "title-asc":
+      return sorted.sort((a, b) =>
+        a.title.localeCompare(b.title, undefined, { sensitivity: "base" }),
+      );
+    case "title-desc":
+      return sorted.sort((a, b) =>
+        b.title.localeCompare(a.title, undefined, { sensitivity: "base" }),
+      );
+    case "newest":
+    default:
+      return sorted.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  }
+}
 
 export default function WishlistList({
   items,
@@ -14,6 +64,9 @@ export default function WishlistList({
 }) {
   const router = useRouter();
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [sort, setSort] = useState<SortOption>("newest");
+
+  const sortedItems = useMemo(() => sortItems(items, sort), [items, sort]);
 
   async function handleDelete(id: number) {
     await fetch(`/api/items/${id}`, { method: "DELETE" });
@@ -29,81 +82,48 @@ export default function WishlistList({
   }
 
   return (
-    <ul className="flex flex-col gap-3">
-      {items.map((item) =>
-        editingId === item.id ? (
-          <EditItemForm
-            key={item.id}
-            item={item}
-            onDone={() => {
-              setEditingId(null);
-              router.refresh();
-            }}
-            onCancel={() => setEditingId(null)}
-          />
-        ) : (
-          <li
-            key={item.id}
-            className="flex items-start justify-between gap-4 rounded-lg border border-black/[.08] bg-white p-4 dark:border-white/[.145] dark:bg-zinc-950"
-          >
-            <div className="flex items-start gap-4">
-              {item.image_url && (
-                // eslint-disable-next-line @next/next/no-img-element -- arbitrary external domains, can't be allow-listed for next/image
-                <img
-                  src={item.image_url}
-                  alt=""
-                  className="h-16 w-16 shrink-0 rounded-md border border-black/[.08] object-cover dark:border-white/[.145]"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
-              )}
-              <div>
-                <p className="font-medium text-black dark:text-zinc-50">
-                  {item.url ? (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline underline-offset-2"
-                    >
-                      {item.title}
-                    </a>
-                  ) : (
-                    item.title
-                  )}
-                  {item.price != null && (
-                    <span className="ml-2 text-sm font-normal text-zinc-500 dark:text-zinc-400">
-                      ${item.price}
-                    </span>
-                  )}
-                </p>
-                {item.notes && (
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    {item.notes}
-                  </p>
-                )}
-              </div>
-            </div>
-            {canEdit && (
-              <div className="flex shrink-0 gap-3 text-sm">
-                <button
-                  onClick={() => setEditingId(item.id)}
-                  className="text-zinc-500 hover:underline dark:text-zinc-400"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  className="text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400"
-                >
-                  Remove
-                </button>
-              </div>
-            )}
-          </li>
-        ),
-      )}
-    </ul>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-end gap-2 text-sm">
+        <label htmlFor="sort" className="text-zinc-500 dark:text-zinc-400">
+          Sort by
+        </label>
+        <select
+          id="sort"
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortOption)}
+          className="rounded-md border border-black/[.08] bg-transparent px-2 py-1 text-sm dark:border-white/[.145]"
+        >
+          {Object.entries(SORT_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        {sortedItems.map((item) =>
+          editingId === item.id ? (
+            <EditItemForm
+              key={item.id}
+              item={item}
+              onDone={() => {
+                setEditingId(null);
+                router.refresh();
+              }}
+              onCancel={() => setEditingId(null)}
+            />
+          ) : (
+            <WishlistCard
+              key={item.id}
+              item={item}
+              canEdit={canEdit}
+              onEdit={() => setEditingId(item.id)}
+              onDelete={() => handleDelete(item.id)}
+            />
+          ),
+        )}
+      </div>
+    </div>
   );
 }
