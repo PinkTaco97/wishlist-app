@@ -39,13 +39,13 @@ export default function WishlistCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 p-3">
+      <div className="flex flex-1 flex-col gap-1.5 p-5">
         {item.category && (
-          <span className="self-start rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+          <span className="self-start rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
             {item.category}
           </span>
         )}
-        <p className="text-sm font-medium text-black dark:text-zinc-50">
+        <p className="text-lg font-medium text-black dark:text-zinc-50">
           {item.url ? (
             <a
               href={item.url}
@@ -60,18 +60,18 @@ export default function WishlistCard({
           )}
         </p>
         {item.price != null && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-base text-zinc-500 dark:text-zinc-400">
             ${item.price}
           </p>
         )}
         {item.notes && (
-          <p className="line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="line-clamp-2 text-sm text-zinc-500 dark:text-zinc-400">
             {item.notes}
           </p>
         )}
 
         {canEdit && (
-          <div className="mt-auto flex gap-3 pt-2 text-xs">
+          <div className="mt-auto flex gap-4 pt-3 text-sm">
             <button
               onClick={onEdit}
               className="text-zinc-500 hover:underline dark:text-zinc-400"

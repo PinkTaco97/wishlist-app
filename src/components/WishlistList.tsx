@@ -182,29 +182,29 @@ export default function WishlistList({
         </p>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {visibleItems.map((item) =>
-              editingId === item.id ? (
-                <EditItemForm
-                  key={item.id}
-                  item={item}
-                  existingCategories={categories}
-                  onDone={() => {
-                    setEditingId(null);
-                    router.refresh();
-                  }}
-                  onCancel={() => setEditingId(null)}
-                />
-              ) : (
-                <WishlistCard
-                  key={item.id}
-                  item={item}
-                  canEdit={canEdit}
-                  onEdit={() => setEditingId(item.id)}
-                  onDelete={() => handleDelete(item.id)}
-                />
-              ),
-            )}
+          <div className="columns-1 gap-5 sm:columns-2 md:columns-3">
+            {visibleItems.map((item) => (
+              <div key={item.id} className="mb-5 break-inside-avoid">
+                {editingId === item.id ? (
+                  <EditItemForm
+                    item={item}
+                    existingCategories={categories}
+                    onDone={() => {
+                      setEditingId(null);
+                      router.refresh();
+                    }}
+                    onCancel={() => setEditingId(null)}
+                  />
+                ) : (
+                  <WishlistCard
+                    item={item}
+                    canEdit={canEdit}
+                    onEdit={() => setEditingId(item.id)}
+                    onDelete={() => handleDelete(item.id)}
+                  />
+                )}
+              </div>
+            ))}
           </div>
 
           {hasMore && <div ref={sentinelRef} className="h-1" />}
