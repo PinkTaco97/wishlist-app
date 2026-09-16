@@ -10,6 +10,18 @@ const PAGE_SIZE = 12;
 const UNCATEGORIZED = "__uncategorized__";
 const ALL_CATEGORIES = "";
 
+function getColumnCount(width: number): number {
+  if (width >= 768) return 3;
+  if (width >= 640) return 2;
+  return 1;
+}
+
+function distributeIntoColumns<T>(items: T[], columnCount: number): T[][] {
+  const columns: T[][] = Array.from({ length: columnCount }, () => []);
+  items.forEach((item, i) => columns[i % columnCount].push(item));
+  return columns;
+}
+
 type SortOption =
   | "newest"
   | "oldest"
@@ -71,6 +83,7 @@ export default function WishlistList({
   const [sort, setSort] = useState<SortOption>("newest");
   const [categoryFilter, setCategoryFilter] = useState(ALL_CATEGORIES);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [columnCount, setColumnCount] = useState(1);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const categories = useMemo(
@@ -95,6 +108,10 @@ export default function WishlistList({
   );
   const visibleItems = sortedItems.slice(0, visibleCount);
   const hasMore = visibleCount < sortedItems.length;
+  const columnItems = useMemo(
+    () => distributeIntoColumns(visibleItems, columnCount),
+    [visibleItems, columnCount],
+  );
 
   // Re-collapse to the first page whenever sort/filter changes, adjusted
   // during render (per React's guidance) rather than in an effect.
@@ -104,6 +121,17 @@ export default function WishlistList({
     setPrevKey(currentKey);
     setVisibleCount(PAGE_SIZE);
   }
+
+  useEffect(() => {
+    // Column count depends on viewport width, which is browser-only state
+    // with no render-time equivalent — genuinely needs an effect.
+    function updateColumnCount() {
+      setColumnCount(getColumnCount(window.innerWidth));
+    }
+    updateColumnCount();
+    window.addEventListener("resize", updateColumnCount);
+    return () => window.removeEventListener("resize", updateColumnCount);
+  }, []);
 
   useEffect(() => {
     if (!hasMore) return;
@@ -182,26 +210,30 @@ export default function WishlistList({
         </p>
       ) : (
         <>
-          <div className="columns-1 gap-5 sm:columns-2 md:columns-3">
-            {visibleItems.map((item) => (
-              <div key={item.id} className="mb-5 break-inside-avoid">
-                {editingId === item.id ? (
-                  <EditItemForm
-                    item={item}
-                    existingCategories={categories}
-                    onDone={() => {
-                      setEditingId(null);
-                      router.refresh();
-                    }}
-                    onCancel={() => setEditingId(null)}
-                  />
-                ) : (
-                  <WishlistCard
-                    item={item}
-                    canEdit={canEdit}
-                    onEdit={() => setEditingId(item.id)}
-                    onDelete={() => handleDelete(item.id)}
-                  />
+          <div className="flex gap-5">
+            {columnItems.map((column, columnIndex) => (
+              <div key={columnIndex} className="flex flex-1 flex-col gap-5">
+                {column.map((item) =>
+                  editingId === item.id ? (
+                    <EditItemForm
+                      key={item.id}
+                      item={item}
+                      existingCategories={categories}
+                      onDone={() => {
+                        setEditingId(null);
+                        router.refresh();
+                      }}
+                      onCancel={() => setEditingId(null)}
+                    />
+                  ) : (
+                    <WishlistCard
+                      key={item.id}
+                      item={item}
+                      canEdit={canEdit}
+                      onEdit={() => setEditingId(item.id)}
+                      onDelete={() => handleDelete(item.id)}
+                    />
+                  ),
                 )}
               </div>
             ))}
