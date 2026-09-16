@@ -1,8 +1,7 @@
 import { getAllItems } from "@/lib/items";
 import { isAuthenticated } from "@/lib/auth";
 import WishlistList from "@/components/WishlistList";
-import AuthControls from "@/components/AuthControls";
-import AdminActions from "@/components/AdminActions";
+import AvatarMenu from "@/components/AvatarMenu";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export const dynamic = "force-dynamic";
@@ -29,11 +28,10 @@ export default async function Home() {
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <AuthControls authed={authed} />
+            {authed && <AvatarMenu existingCategories={existingCategories} />}
           </div>
         </div>
 
-        {authed && <AdminActions existingCategories={existingCategories} />}
         <WishlistList items={items} canEdit={authed} />
       </main>
     </div>
