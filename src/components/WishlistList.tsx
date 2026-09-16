@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { WishlistItem } from "@/lib/items";
 import EditItemForm from "@/components/EditItemForm";
 import WishlistCard from "@/components/WishlistCard";
+import Modal from "@/components/Modal";
 
 const PAGE_SIZE = 12;
 const UNCATEGORIZED = "__uncategorized__";
@@ -112,6 +113,7 @@ export default function WishlistList({
     () => distributeIntoColumns(visibleItems, columnCount),
     [visibleItems, columnCount],
   );
+  const editingItem = items.find((item) => item.id === editingId) ?? null;
 
   // Re-collapse to the first page whenever sort/filter changes, adjusted
   // during render (per React's guidance) rather than in an effect.
@@ -213,28 +215,15 @@ export default function WishlistList({
           <div className="flex gap-5">
             {columnItems.map((column, columnIndex) => (
               <div key={columnIndex} className="flex flex-1 flex-col gap-5">
-                {column.map((item) =>
-                  editingId === item.id ? (
-                    <EditItemForm
-                      key={item.id}
-                      item={item}
-                      existingCategories={categories}
-                      onDone={() => {
-                        setEditingId(null);
-                        router.refresh();
-                      }}
-                      onCancel={() => setEditingId(null)}
-                    />
-                  ) : (
-                    <WishlistCard
-                      key={item.id}
-                      item={item}
-                      canEdit={canEdit}
-                      onEdit={() => setEditingId(item.id)}
-                      onDelete={() => handleDelete(item.id)}
-                    />
-                  ),
-                )}
+                {column.map((item) => (
+                  <WishlistCard
+                    key={item.id}
+                    item={item}
+                    canEdit={canEdit}
+                    onEdit={() => setEditingId(item.id)}
+                    onDelete={() => handleDelete(item.id)}
+                  />
+                ))}
               </div>
             ))}
           </div>
@@ -242,6 +231,24 @@ export default function WishlistList({
           {hasMore && <div ref={sentinelRef} className="h-1" />}
         </>
       )}
+
+      <Modal
+        open={editingItem != null}
+        onClose={() => setEditingId(null)}
+        title="Edit item"
+      >
+        {editingItem && (
+          <EditItemForm
+            item={editingItem}
+            existingCategories={categories}
+            onDone={() => {
+              setEditingId(null);
+              router.refresh();
+            }}
+            onCancel={() => setEditingId(null)}
+          />
+        )}
+      </Modal>
     </div>
   );
 }

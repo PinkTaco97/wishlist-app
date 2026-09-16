@@ -43,15 +43,13 @@ export default function EditItemForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-lg border border-black/[.08] bg-white p-4 dark:border-white/[.145] dark:bg-zinc-950"
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <input
         className="rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
         placeholder="Item name"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
+        autoFocus
         required
       />
       <input
@@ -67,6 +65,13 @@ export default function EditItemForm({
         onChange={(e) => setImageUrl(e.target.value)}
       />
       <input
+        className="rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
+        placeholder="Price"
+        inputMode="decimal"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+      />
+      <input
         list="edit-category-options"
         className="rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
         placeholder="Category (optional)"
@@ -78,21 +83,12 @@ export default function EditItemForm({
           <option key={c} value={c} />
         ))}
       </datalist>
-      <div className="flex gap-3">
-        <input
-          className="w-32 rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
-          placeholder="Price"
-          inputMode="decimal"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-        <input
-          className="flex-1 rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
-          placeholder="Notes (optional)"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-      </div>
+      <input
+        className="rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
+        placeholder="Notes (optional)"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+      />
       <div className="flex gap-3">
         <button
           type="submit"
