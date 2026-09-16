@@ -2,8 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import AddItemModal from "@/components/AddItemModal";
 
-export default function AdminActions() {
+export default function AdminActions({
+  existingCategories,
+}: {
+  existingCategories: string[];
+}) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [importing, setImporting] = useState(false);
@@ -60,6 +65,7 @@ export default function AdminActions() {
     <div className="flex flex-col gap-2 rounded-lg border border-black/[.08] bg-white p-4 text-sm dark:border-white/[.145] dark:bg-zinc-950">
       <p className="font-medium text-black dark:text-zinc-50">Manage wishlist</p>
       <div className="flex flex-wrap items-center gap-3">
+        <AddItemModal existingCategories={existingCategories} />
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- file download, not a page navigation */}
         <a
           href="/api/items/export"

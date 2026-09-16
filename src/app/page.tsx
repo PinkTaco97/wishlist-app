@@ -1,6 +1,5 @@
 import { getAllItems } from "@/lib/items";
 import { isAuthenticated } from "@/lib/auth";
-import WishlistItemForm from "@/components/WishlistItemForm";
 import WishlistList from "@/components/WishlistList";
 import AuthControls from "@/components/AuthControls";
 import AdminActions from "@/components/AdminActions";
@@ -34,12 +33,7 @@ export default async function Home() {
           </div>
         </div>
 
-        {authed && (
-          <>
-            <WishlistItemForm existingCategories={existingCategories} />
-            <AdminActions />
-          </>
-        )}
+        {authed && <AdminActions existingCategories={existingCategories} />}
         <WishlistList items={items} canEdit={authed} />
       </main>
     </div>

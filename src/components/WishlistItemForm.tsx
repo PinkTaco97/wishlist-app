@@ -5,8 +5,10 @@ import { useState } from "react";
 
 export default function WishlistItemForm({
   existingCategories,
+  onDone,
 }: {
   existingCategories: string[];
+  onDone?: () => void;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -37,6 +39,7 @@ export default function WishlistItemForm({
         setPrice("");
         setNotes("");
         router.refresh();
+        onDone?.();
       }
     } finally {
       setSubmitting(false);
@@ -44,15 +47,13 @@ export default function WishlistItemForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-lg border border-black/[.08] bg-white p-5 dark:border-white/[.145] dark:bg-zinc-950"
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <input
         className="rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
         placeholder="Item name"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
+        autoFocus
         required
       />
       <input
@@ -67,33 +68,31 @@ export default function WishlistItemForm({
         value={imageUrl}
         onChange={(e) => setImageUrl(e.target.value)}
       />
-      <div className="flex gap-3">
-        <input
-          className="w-32 rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
-          placeholder="Price"
-          inputMode="decimal"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-        <input
-          list="category-options"
-          className="w-40 rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
-          placeholder="Category (optional)"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />
-        <datalist id="category-options">
-          {existingCategories.map((c) => (
-            <option key={c} value={c} />
-          ))}
-        </datalist>
-        <input
-          className="flex-1 rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
-          placeholder="Notes (optional)"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-      </div>
+      <input
+        className="rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
+        placeholder="Price"
+        inputMode="decimal"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+      />
+      <input
+        list="category-options"
+        className="rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
+        placeholder="Category (optional)"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+      />
+      <datalist id="category-options">
+        {existingCategories.map((c) => (
+          <option key={c} value={c} />
+        ))}
+      </datalist>
+      <input
+        className="rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
+        placeholder="Notes (optional)"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+      />
       <button
         type="submit"
         disabled={submitting}
