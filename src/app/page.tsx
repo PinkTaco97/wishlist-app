@@ -9,6 +9,9 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const items = getAllItems();
   const authed = await isAuthenticated();
+  const existingCategories = Array.from(
+    new Set(items.map((item) => item.category).filter((c): c is string => !!c)),
+  ).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
@@ -26,7 +29,7 @@ export default async function Home() {
           <AuthControls authed={authed} />
         </div>
 
-        {authed && <WishlistItemForm />}
+        {authed && <WishlistItemForm existingCategories={existingCategories} />}
         <WishlistList items={items} canEdit={authed} />
       </main>
     </div>

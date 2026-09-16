@@ -40,6 +40,11 @@ export default function WishlistCard({
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-3">
+        {item.category && (
+          <span className="self-start rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+            {item.category}
+          </span>
+        )}
         <p className="text-sm font-medium text-black dark:text-zinc-50">
           {item.url ? (
             <a

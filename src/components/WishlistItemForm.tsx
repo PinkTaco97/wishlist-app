@@ -3,10 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function WishlistItemForm() {
+export default function WishlistItemForm({
+  existingCategories,
+}: {
+  existingCategories: string[];
+}) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
+  const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -20,12 +25,13 @@ export default function WishlistItemForm() {
       const res = await fetch("/api/items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, url, price, notes }),
+        body: JSON.stringify({ title, url, category, price, notes }),
       });
 
       if (res.ok) {
         setTitle("");
         setUrl("");
+        setCategory("");
         setPrice("");
         setNotes("");
         router.refresh();
@@ -61,6 +67,18 @@ export default function WishlistItemForm() {
           value={price}
           onChange={(e) => setPrice(e.target.value)}
         />
+        <input
+          list="category-options"
+          className="w-40 rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
+          placeholder="Category (optional)"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
+        <datalist id="category-options">
+          {existingCategories.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
         <input
           className="flex-1 rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
           placeholder="Notes (optional)"

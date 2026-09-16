@@ -17,18 +17,23 @@ function createConnection() {
       title TEXT NOT NULL,
       url TEXT,
       image_url TEXT,
+      category TEXT,
       notes TEXT,
       price REAL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
 
-  // Databases created before image_url existed need it added on.
+  // Databases created before these columns existed need them added on.
   const columns = db.prepare("PRAGMA table_info(items)").all() as {
     name: string;
   }[];
-  if (!columns.some((column) => column.name === "image_url")) {
+  const columnNames = new Set(columns.map((column) => column.name));
+  if (!columnNames.has("image_url")) {
     db.exec("ALTER TABLE items ADD COLUMN image_url TEXT");
+  }
+  if (!columnNames.has("category")) {
+    db.exec("ALTER TABLE items ADD COLUMN category TEXT");
   }
 
   return db;

@@ -5,15 +5,18 @@ import type { WishlistItem } from "@/lib/items";
 
 export default function EditItemForm({
   item,
+  existingCategories,
   onDone,
   onCancel,
 }: {
   item: WishlistItem;
+  existingCategories: string[];
   onDone: () => void;
   onCancel: () => void;
 }) {
   const [title, setTitle] = useState(item.title);
   const [url, setUrl] = useState(item.url ?? "");
+  const [category, setCategory] = useState(item.category ?? "");
   const [price, setPrice] = useState(item.price != null ? String(item.price) : "");
   const [notes, setNotes] = useState(item.notes ?? "");
   const [submitting, setSubmitting] = useState(false);
@@ -27,7 +30,7 @@ export default function EditItemForm({
       const res = await fetch(`/api/items/${item.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, url, price, notes }),
+        body: JSON.stringify({ title, url, category, price, notes }),
       });
 
       if (res.ok) onDone();
@@ -54,6 +57,18 @@ export default function EditItemForm({
         value={url}
         onChange={(e) => setUrl(e.target.value)}
       />
+      <input
+        list="edit-category-options"
+        className="rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"
+        placeholder="Category (optional)"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+      />
+      <datalist id="edit-category-options">
+        {existingCategories.map((c) => (
+          <option key={c} value={c} />
+        ))}
+      </datalist>
       <div className="flex gap-3">
         <input
           className="w-32 rounded-md border border-black/[.08] bg-transparent px-3 py-2 text-sm dark:border-white/[.145]"

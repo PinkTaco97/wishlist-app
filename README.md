@@ -37,6 +37,13 @@ show a thumbnail. Only the image URL is stored — nothing is downloaded or
 hosted, so there's no image storage to manage. Pages without either tag just
 show no thumbnail.
 
+## Categories
+
+Items can have a free-text category (e.g. "Electronics", "Books"). The add/
+edit forms suggest previously used categories as you type, and the wishlist
+can be filtered to one category (or "Uncategorized") via the Category
+dropdown, alongside the existing sort control.
+
 ## Project structure
 
 - `src/app/page.tsx` — home page listing wishlist items with an add form

@@ -7,6 +7,8 @@ import EditItemForm from "@/components/EditItemForm";
 import WishlistCard from "@/components/WishlistCard";
 
 const PAGE_SIZE = 12;
+const UNCATEGORIZED = "__uncategorized__";
+const ALL_CATEGORIES = "";
 
 type SortOption =
   | "newest"
@@ -67,18 +69,39 @@ export default function WishlistList({
   const router = useRouter();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [sort, setSort] = useState<SortOption>("newest");
+  const [categoryFilter, setCategoryFilter] = useState(ALL_CATEGORIES);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const sortedItems = useMemo(() => sortItems(items, sort), [items, sort]);
+  const categories = useMemo(
+    () =>
+      Array.from(
+        new Set(items.map((item) => item.category).filter((c): c is string => !!c)),
+      ).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" })),
+    [items],
+  );
+
+  const filteredItems = useMemo(() => {
+    if (categoryFilter === ALL_CATEGORIES) return items;
+    if (categoryFilter === UNCATEGORIZED) {
+      return items.filter((item) => !item.category);
+    }
+    return items.filter((item) => item.category === categoryFilter);
+  }, [items, categoryFilter]);
+
+  const sortedItems = useMemo(
+    () => sortItems(filteredItems, sort),
+    [filteredItems, sort],
+  );
   const visibleItems = sortedItems.slice(0, visibleCount);
   const hasMore = visibleCount < sortedItems.length;
 
-  // Re-collapse to the first page whenever the sort changes, adjusted during
-  // render (per React's guidance) rather than in an effect.
-  const [prevSort, setPrevSort] = useState(sort);
-  if (sort !== prevSort) {
-    setPrevSort(sort);
+  // Re-collapse to the first page whenever sort/filter changes, adjusted
+  // during render (per React's guidance) rather than in an effect.
+  const [prevKey, setPrevKey] = useState(`${sort}:${categoryFilter}`);
+  const currentKey = `${sort}:${categoryFilter}`;
+  if (currentKey !== prevKey) {
+    setPrevKey(currentKey);
     setVisibleCount(PAGE_SIZE);
   }
 
@@ -114,49 +137,79 @@ export default function WishlistList({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-end gap-2 text-sm">
-        <label htmlFor="sort" className="text-zinc-500 dark:text-zinc-400">
-          Sort by
-        </label>
-        <select
-          id="sort"
-          value={sort}
-          onChange={(e) => setSort(e.target.value as SortOption)}
-          className="rounded-md border border-black/[.08] bg-transparent px-2 py-1 text-sm dark:border-white/[.145]"
-        >
-          {Object.entries(SORT_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 text-sm">
+        <div className="flex items-center gap-2">
+          <label htmlFor="category" className="text-zinc-500 dark:text-zinc-400">
+            Category
+          </label>
+          <select
+            id="category"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="rounded-md border border-black/[.08] bg-transparent px-2 py-1 text-sm dark:border-white/[.145]"
+          >
+            <option value={ALL_CATEGORIES}>All categories</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+            <option value={UNCATEGORIZED}>Uncategorized</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label htmlFor="sort" className="text-zinc-500 dark:text-zinc-400">
+            Sort by
+          </label>
+          <select
+            id="sort"
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortOption)}
+            className="rounded-md border border-black/[.08] bg-transparent px-2 py-1 text-sm dark:border-white/[.145]"
+          >
+            {Object.entries(SORT_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {visibleItems.map((item) =>
-          editingId === item.id ? (
-            <EditItemForm
-              key={item.id}
-              item={item}
-              onDone={() => {
-                setEditingId(null);
-                router.refresh();
-              }}
-              onCancel={() => setEditingId(null)}
-            />
-          ) : (
-            <WishlistCard
-              key={item.id}
-              item={item}
-              canEdit={canEdit}
-              onEdit={() => setEditingId(item.id)}
-              onDelete={() => handleDelete(item.id)}
-            />
-          ),
-        )}
-      </div>
+      {sortedItems.length === 0 ? (
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          No items in this category.
+        </p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {visibleItems.map((item) =>
+              editingId === item.id ? (
+                <EditItemForm
+                  key={item.id}
+                  item={item}
+                  existingCategories={categories}
+                  onDone={() => {
+                    setEditingId(null);
+                    router.refresh();
+                  }}
+                  onCancel={() => setEditingId(null)}
+                />
+              ) : (
+                <WishlistCard
+                  key={item.id}
+                  item={item}
+                  canEdit={canEdit}
+                  onEdit={() => setEditingId(item.id)}
+                  onDelete={() => handleDelete(item.id)}
+                />
+              ),
+            )}
+          </div>
 
-      {hasMore && <div ref={sentinelRef} className="h-1" />}
+          {hasMore && <div ref={sentinelRef} className="h-1" />}
+        </>
+      )}
     </div>
   );
 }
