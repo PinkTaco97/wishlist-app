@@ -61,7 +61,7 @@ export default function WishlistCard({
         </p>
         {item.price != null && (
           <p className="text-base text-zinc-500 dark:text-zinc-400">
-            ${item.price}
+            ${item.price.toLocaleString("en-US")}
           </p>
         )}
         {item.notes && (
