@@ -37,6 +37,28 @@ export function addItem(input: {
     .get(result.lastInsertRowid) as WishlistItem;
 }
 
+export function updateItem(
+  id: number,
+  input: {
+    title: string;
+    url?: string | null;
+    notes?: string | null;
+    price?: number | null;
+  },
+): WishlistItem {
+  db.prepare(
+    "UPDATE items SET title = @title, url = @url, notes = @notes, price = @price WHERE id = @id",
+  ).run({
+    id,
+    title: input.title,
+    url: input.url ?? null,
+    notes: input.notes ?? null,
+    price: input.price ?? null,
+  });
+
+  return db.prepare("SELECT * FROM items WHERE id = ?").get(id) as WishlistItem;
+}
+
 export function deleteItem(id: number): void {
   db.prepare("DELETE FROM items WHERE id = ?").run(id);
 }
