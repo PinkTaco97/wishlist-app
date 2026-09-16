@@ -6,6 +6,7 @@ import type { WishlistItem } from "@/lib/items";
 import EditItemForm from "@/components/EditItemForm";
 import WishlistCard from "@/components/WishlistCard";
 import Modal from "@/components/Modal";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const PAGE_SIZE = 12;
 const UNCATEGORIZED = "__uncategorized__";
@@ -81,6 +82,8 @@ export default function WishlistList({
 }) {
   const router = useRouter();
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [sort, setSort] = useState<SortOption>("newest");
   const [categoryFilter, setCategoryFilter] = useState(ALL_CATEGORIES);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -114,6 +117,7 @@ export default function WishlistList({
     [visibleItems, columnCount],
   );
   const editingItem = items.find((item) => item.id === editingId) ?? null;
+  const deletingItem = items.find((item) => item.id === confirmDeleteId) ?? null;
 
   // Re-collapse to the first page whenever sort/filter changes, adjusted
   // during render (per React's guidance) rather than in an effect.
@@ -152,9 +156,16 @@ export default function WishlistList({
     return () => observer.disconnect();
   }, [hasMore, sortedItems.length]);
 
-  async function handleDelete(id: number) {
-    await fetch(`/api/items/${id}`, { method: "DELETE" });
-    router.refresh();
+  async function handleConfirmDelete() {
+    if (!deletingItem) return;
+    setDeleting(true);
+    try {
+      await fetch(`/api/items/${deletingItem.id}`, { method: "DELETE" });
+      router.refresh();
+    } finally {
+      setDeleting(false);
+      setConfirmDeleteId(null);
+    }
   }
 
   if (items.length === 0) {
@@ -221,7 +232,7 @@ export default function WishlistList({
                     item={item}
                     canEdit={canEdit}
                     onEdit={() => setEditingId(item.id)}
-                    onDelete={() => handleDelete(item.id)}
+                    onDelete={() => setConfirmDeleteId(item.id)}
                   />
                 ))}
               </div>
@@ -249,6 +260,21 @@ export default function WishlistList({
           />
         )}
       </Modal>
+
+      <ConfirmDialog
+        open={deletingItem != null}
+        title="Remove item"
+        message={
+          deletingItem
+            ? `Remove "${deletingItem.title}" from your wishlist? This can't be undone.`
+            : ""
+        }
+        confirmLabel="Remove"
+        danger
+        confirming={deleting}
+        onCancel={() => setConfirmDeleteId(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

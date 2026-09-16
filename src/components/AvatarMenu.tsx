@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Modal from "@/components/Modal";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import WishlistItemForm from "@/components/WishlistItemForm";
 
 const menuItemClass =
@@ -18,6 +19,7 @@ export default function AvatarMenu({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [confirmDeleteAllOpen, setConfirmDeleteAllOpen] = useState(false);
   const [importing, setImporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -80,19 +82,14 @@ export default function AvatarMenu({
     }
   }
 
-  async function handleDeleteAll() {
-    setOpen(false);
-    const confirmed = window.confirm(
-      "Delete ALL wishlist items? This cannot be undone.",
-    );
-    if (!confirmed) return;
-
+  async function handleConfirmDeleteAll() {
     setDeleting(true);
     try {
       await fetch("/api/items", { method: "DELETE" });
       router.refresh();
     } finally {
       setDeleting(false);
+      setConfirmDeleteAllOpen(false);
     }
   }
 
@@ -150,11 +147,13 @@ export default function AvatarMenu({
           />
           <button
             type="button"
-            onClick={handleDeleteAll}
-            disabled={deleting}
+            onClick={() => {
+              setOpen(false);
+              setConfirmDeleteAllOpen(true);
+            }}
             className={`${menuItemClass} ${menuItemDangerColor}`}
           >
-            {deleting ? "Deleting..." : "Delete all"}
+            Delete all
           </button>
           <div className="my-1 border-t border-black/[.08] dark:border-white/[.145]" />
           <button
@@ -177,6 +176,17 @@ export default function AvatarMenu({
           onDone={() => setAddModalOpen(false)}
         />
       </Modal>
+
+      <ConfirmDialog
+        open={confirmDeleteAllOpen}
+        title="Delete all items"
+        message="Delete ALL wishlist items? This can't be undone."
+        confirmLabel="Delete all"
+        danger
+        confirming={deleting}
+        onCancel={() => setConfirmDeleteAllOpen(false)}
+        onConfirm={handleConfirmDeleteAll}
+      />
     </div>
   );
 }
