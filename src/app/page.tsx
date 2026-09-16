@@ -4,6 +4,7 @@ import WishlistItemForm from "@/components/WishlistItemForm";
 import WishlistList from "@/components/WishlistList";
 import AuthControls from "@/components/AuthControls";
 import AdminActions from "@/components/AdminActions";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,10 @@ export default async function Home() {
               to look for ideas.
             </p>
           </div>
-          <AuthControls authed={authed} />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <AuthControls authed={authed} />
+          </div>
         </div>
 
         {authed && (
