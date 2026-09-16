@@ -3,6 +3,7 @@ import { isAuthenticated } from "@/lib/auth";
 import WishlistItemForm from "@/components/WishlistItemForm";
 import WishlistList from "@/components/WishlistList";
 import AuthControls from "@/components/AuthControls";
+import AdminActions from "@/components/AdminActions";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,12 @@ export default async function Home() {
           <AuthControls authed={authed} />
         </div>
 
-        {authed && <WishlistItemForm existingCategories={existingCategories} />}
+        {authed && (
+          <>
+            <WishlistItemForm existingCategories={existingCategories} />
+            <AdminActions />
+          </>
+        )}
         <WishlistList items={items} canEdit={authed} />
       </main>
     </div>

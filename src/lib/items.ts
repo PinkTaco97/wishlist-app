@@ -85,3 +85,7 @@ export function updateItem(
 export function deleteItem(id: number): void {
   db.prepare("DELETE FROM items WHERE id = ?").run(id);
 }
+
+export function deleteAllItems(): void {
+  db.prepare("DELETE FROM items").run();
+}

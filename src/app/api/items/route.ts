@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
-import { addItem, getAllItems, normalizeUrl } from "@/lib/items";
+import { addItem, deleteAllItems, getAllItems, normalizeUrl } from "@/lib/items";
 import { scrapeImageUrl } from "@/lib/scrape-image";
 
 export async function GET() {
@@ -31,4 +31,13 @@ export async function POST(request: NextRequest) {
   });
 
   return NextResponse.json(item, { status: 201 });
+}
+
+export async function DELETE() {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  deleteAllItems();
+  return NextResponse.json({ ok: true });
 }
