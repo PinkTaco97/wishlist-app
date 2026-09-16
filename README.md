@@ -29,6 +29,14 @@ browse for gift ideas. Only whoever is signed in (via `/login`, using
 `ADMIN_PASSWORD`) can add, edit, or remove items. The session is a signed
 httpOnly cookie; there's no user database, just the one shared password.
 
+## Product images
+
+When you add or edit an item with a link, the server fetches that page and
+pulls its `og:image` (falling back to `twitter:image`) so the wishlist can
+show a thumbnail. Only the image URL is stored — nothing is downloaded or
+hosted, so there's no image storage to manage. Pages without either tag just
+show no thumbnail.
+
 ## Project structure
 
 - `src/app/page.tsx` — home page listing wishlist items with an add form
@@ -39,6 +47,7 @@ httpOnly cookie; there's no user database, just the one shared password.
 - `src/lib/auth.ts` — password check + session cookie helpers
 - `src/lib/db.ts` — SQLite connection + schema setup
 - `src/lib/items.ts` — data access helpers
+- `src/lib/scrape-image.ts` — fetches a page's `og:image`/`twitter:image`
 
 ## Learn More
 

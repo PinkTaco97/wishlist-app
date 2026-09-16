@@ -16,11 +16,20 @@ function createConnection() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
       url TEXT,
+      image_url TEXT,
       notes TEXT,
       price REAL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Databases created before image_url existed need it added on.
+  const columns = db.prepare("PRAGMA table_info(items)").all() as {
+    name: string;
+  }[];
+  if (!columns.some((column) => column.name === "image_url")) {
+    db.exec("ALTER TABLE items ADD COLUMN image_url TEXT");
+  }
 
   return db;
 }

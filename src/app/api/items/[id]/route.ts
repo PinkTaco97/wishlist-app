@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
-import { deleteItem, updateItem } from "@/lib/items";
+import { deleteItem, normalizeUrl, updateItem } from "@/lib/items";
+import { scrapeImageUrl } from "@/lib/scrape-image";
 
 export async function PATCH(
   request: NextRequest,
@@ -17,9 +18,13 @@ export async function PATCH(
     return NextResponse.json({ error: "Title is required" }, { status: 400 });
   }
 
+  const url = normalizeUrl(body.url);
+  const imageUrl = url ? await scrapeImageUrl(url) : null;
+
   const item = updateItem(Number(id), {
     title: body.title,
-    url: body.url ?? null,
+    url,
+    imageUrl,
     notes: body.notes ?? null,
     price: body.price ? Number(body.price) : null,
   });

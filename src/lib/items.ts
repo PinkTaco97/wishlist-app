@@ -4,12 +4,13 @@ export type WishlistItem = {
   id: number;
   title: string;
   url: string | null;
+  image_url: string | null;
   notes: string | null;
   price: number | null;
   created_at: string;
 };
 
-function normalizeUrl(url: string | null | undefined): string | null {
+export function normalizeUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   const trimmed = url.trim();
   if (!trimmed) return null;
@@ -25,16 +26,18 @@ export function getAllItems(): WishlistItem[] {
 export function addItem(input: {
   title: string;
   url?: string | null;
+  imageUrl?: string | null;
   notes?: string | null;
   price?: number | null;
 }): WishlistItem {
   const result = db
     .prepare(
-      "INSERT INTO items (title, url, notes, price) VALUES (@title, @url, @notes, @price)",
+      "INSERT INTO items (title, url, image_url, notes, price) VALUES (@title, @url, @imageUrl, @notes, @price)",
     )
     .run({
       title: input.title,
       url: normalizeUrl(input.url),
+      imageUrl: input.imageUrl ?? null,
       notes: input.notes ?? null,
       price: input.price ?? null,
     });
@@ -49,16 +52,18 @@ export function updateItem(
   input: {
     title: string;
     url?: string | null;
+    imageUrl?: string | null;
     notes?: string | null;
     price?: number | null;
   },
 ): WishlistItem {
   db.prepare(
-    "UPDATE items SET title = @title, url = @url, notes = @notes, price = @price WHERE id = @id",
+    "UPDATE items SET title = @title, url = @url, image_url = @imageUrl, notes = @notes, price = @price WHERE id = @id",
   ).run({
     id,
     title: input.title,
     url: normalizeUrl(input.url),
+    imageUrl: input.imageUrl ?? null,
     notes: input.notes ?? null,
     price: input.price ?? null,
   });
