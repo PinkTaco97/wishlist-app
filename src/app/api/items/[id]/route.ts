@@ -19,7 +19,8 @@ export async function PATCH(
   }
 
   const url = normalizeUrl(body.url);
-  const imageUrl = url ? await scrapeImageUrl(url) : null;
+  const manualImageUrl = normalizeUrl(body.imageUrl);
+  const imageUrl = manualImageUrl ?? (url ? await scrapeImageUrl(url) : null);
 
   const item = updateItem(Number(id), {
     title: body.title,

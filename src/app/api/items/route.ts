@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
   }
 
   const url = normalizeUrl(body.url);
-  const imageUrl = url ? await scrapeImageUrl(url) : null;
+  const manualImageUrl = normalizeUrl(body.imageUrl);
+  const imageUrl = manualImageUrl ?? (url ? await scrapeImageUrl(url) : null);
 
   const item = addItem({
     title: body.title,

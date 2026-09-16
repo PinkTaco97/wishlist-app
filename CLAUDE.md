@@ -4,11 +4,13 @@
 
 Personal wishlist site: the owner adds gift ideas, shares the link with
 family/friends who can browse (read-only) for gift ideas. Next.js App Router
-+ TypeScript + Tailwind CSS, SQLite via `better-sqlite3` (no ORM).
+
+- TypeScript + Tailwind CSS, SQLite via `better-sqlite3` (no ORM).
 
 ## Auth
 
 Single shared password, not a user table. `src/lib/auth.ts`:
+
 - `ADMIN_PASSWORD` (env) checked on `/login` (`src/app/login/page.tsx` ->
   `POST /api/login`).
 - On success, sets an httpOnly session cookie whose value is
@@ -63,6 +65,7 @@ arbitrary and can't be allow-listed) with `loading="lazy"` and an
 
 `src/components/WishlistList.tsx` owns sort, category filter, and lazy-load
 pagination together:
+
 - Sort and filter are client-side (`useState` + `useMemo`), not query
   params — sorting/filtering never hits the network.
 - Pagination renders `PAGE_SIZE=12` cards at a time, growing via an
