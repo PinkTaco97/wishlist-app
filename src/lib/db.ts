@@ -1,13 +1,16 @@
 import Database from "better-sqlite3";
+import fs from "fs";
 import path from "path";
 
-const dbPath = path.join(process.cwd(), "data", "wishlist.db");
+const dataDir = path.join(process.cwd(), "data");
+const dbPath = path.join(dataDir, "wishlist.db");
 
 declare global {
   var __wishlistDb: Database.Database | undefined;
 }
 
 function createConnection() {
+  fs.mkdirSync(dataDir, { recursive: true });
   const db = new Database(dbPath);
   db.pragma("journal_mode = WAL");
 

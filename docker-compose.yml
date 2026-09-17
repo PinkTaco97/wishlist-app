@@ -1,0 +1,12 @@
+services:
+  wishlist-app:
+    build: .
+    container_name: wishlist-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      ADMIN_PASSWORD: changeme
+      AUTH_SECRET: replace-with-output-of-openssl-rand-hex-32
+    volumes:
+      - ./data:/app/data

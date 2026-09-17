@@ -17,7 +17,17 @@ export default function WishlistCard({
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-lg border border-black/[.08] bg-white dark:border-white/[.145] dark:bg-zinc-950">
+    <div className="relative flex flex-col overflow-hidden rounded-lg border border-black/[.08] bg-white dark:border-white/[.145] dark:bg-zinc-950">
+      {item.url && (
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={item.title}
+          className="absolute inset-0 z-0"
+        />
+      )}
+
       <div className="flex aspect-square w-full items-center justify-center bg-zinc-100 dark:bg-zinc-900">
         {item.image_url && !imageError ? (
           // eslint-disable-next-line @next/next/no-img-element -- arbitrary external domains, can't be allow-listed for next/image
@@ -40,29 +50,20 @@ export default function WishlistCard({
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-lg font-medium text-black dark:text-zinc-50">
+            {item.title}
+          </p>
+          {item.price != null && (
+            <p className="shrink-0 text-base text-zinc-500 dark:text-zinc-400">
+              ${item.price.toLocaleString("en-US")}
+            </p>
+          )}
+        </div>
         {item.category && (
           <span className="self-start rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
             {item.category}
           </span>
-        )}
-        <p className="text-lg font-medium text-black dark:text-zinc-50">
-          {item.url ? (
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2"
-            >
-              {item.title}
-            </a>
-          ) : (
-            item.title
-          )}
-        </p>
-        {item.price != null && (
-          <p className="text-base text-zinc-500 dark:text-zinc-400">
-            ${item.price.toLocaleString("en-US")}
-          </p>
         )}
         {item.notes && (
           <p className="line-clamp-2 text-sm text-zinc-500 dark:text-zinc-400">
@@ -71,7 +72,7 @@ export default function WishlistCard({
         )}
 
         {canEdit && (
-          <div className="mt-auto flex gap-4 pt-3 text-sm">
+          <div className="relative z-10 mt-auto flex gap-4 pt-3 text-sm">
             <button
               onClick={onEdit}
               className="text-zinc-500 hover:underline dark:text-zinc-400"

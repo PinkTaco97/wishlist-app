@@ -94,11 +94,37 @@ pagination together:
   via `sqlite3` or a throwaway Python script) rather than looping the
   add API — looping would trigger a real `scrapeImageUrl` fetch per item.
 
-## Deployment note
+## Deployment
 
 SQLite needs a persistent disk, so this doesn't drop straight onto
 serverless hosts (e.g. Vercel) without swapping `better-sqlite3` for
 something like Turso/LibSQL.
+
+Deployed via Docker (see `Dockerfile`, `docker-compose.yml`, README's
+"Deploying with Docker" section) — built and runtime-tested locally
+(build, run, restart, and full container recreation against a mounted
+volume) before being handed off. `next.config.ts` has `output: "standalone"`
+for this. Two non-obvious fixes baked into the Dockerfile, both found by
+actually running the build rather than assuming it would work:
+- `better-sqlite3` bundles prebuilt binaries for every platform, but (a)
+  it also has a `binding.gyp` with no custom install script, so npm's
+  default behavior still runs `node-gyp rebuild` on `npm ci` regardless —
+  needs `python3 make g++` in the deps stage's `apk add` even though the
+  compiled output goes unused, and (b) Next's standalone output tracing
+  can't follow the runtime `process.platform`/`arch` detection used to
+  pick which prebuild to load, so it only bundles whichever single one
+  happened to run during `next build` (the build machine's platform, not
+  the container's) — the Dockerfile re-copies the full untraced
+  `node_modules/better-sqlite3` from the deps stage to fix this.
+- `src/lib/db.ts` opens the database as a module-level side effect, which
+  Next executes during `next build`'s page-data collection for the API
+  routes — it now `fs.mkdirSync`s the data directory first (also just a
+  general robustness fix: better-sqlite3 won't create missing parent
+  directories on its own).
+
+The `data` directory must be a mounted volume — without one, every
+container rebuild/redeploy wipes the wishlist. `ADMIN_PASSWORD`/`AUTH_SECRET`
+are passed as container env vars, never baked into the image.
 
 ## Git workflow
 

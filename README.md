@@ -44,6 +44,35 @@ edit forms suggest previously used categories as you type, and the wishlist
 can be filtered to one category (or "Uncategorized") via the Category
 dropdown, alongside the existing sort control.
 
+## Deploying with Docker (e.g. Synology NAS)
+
+```bash
+docker compose up -d --build
+```
+
+Before that, edit `docker-compose.yml` and set real values for `ADMIN_PASSWORD`
+and `AUTH_SECRET` (generate the latter with `openssl rand -hex 32`) — don't
+leave the placeholders. The `./data` volume mount is what makes the SQLite
+database survive container rebuilds/updates; without it, every redeploy
+wipes the wishlist.
+
+On Synology, Container Manager's "Project" feature can run this
+`docker-compose.yml` directly, or use `docker build`/`docker run` by hand —
+just make sure the equivalent of the `volumes:` and `environment:` sections
+above carries over.
+
+Two things specific to this app's Dockerfile (vs. a typical Next.js app):
+- **`better-sqlite3` is a native module.** It ships prebuilt binaries for
+  every platform inside the npm package (no compile step needed), but
+  Next's standalone output tracing can't follow its runtime
+  `process.platform`/`arch` detection, so it only bundles whichever single
+  prebuild happened to run during `next build` — the wrong one for the
+  container. The Dockerfile works around this by re-copying the full
+  `better-sqlite3` package from the (untraced) dependency-install stage
+  after the standalone copy.
+- **The SQLite file needs a volume.** `data/wishlist.db` lives inside the
+  container's filesystem otherwise, which is destroyed on every rebuild.
+
 ## Project structure
 
 - `src/app/page.tsx` — home page listing wishlist items with an add form
